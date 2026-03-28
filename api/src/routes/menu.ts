@@ -19,6 +19,18 @@ router.post("/", async (req, res) => {
   try {
     const { name, description, price, category, available } = req.body;
 
+    if (!name || name.trim() === "") {
+      return res.status(400).json({ error: "Menu item name is required" });
+    }
+
+    if (price === undefined || price <= 0) {
+      return res.status(400).json({ error: "Price must be greater than 0" });
+    }
+
+    if (!category || category.trim() === "") {
+      return res.status(400).json({ error: "Category is required" });
+    }
+
     const menuItem = await prisma.menuItem.create({
       data: {
         name,

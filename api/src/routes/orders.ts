@@ -24,10 +24,33 @@ router.get("/", async (req, res) => {
   }
 });
 
+
 // POST create an order
 router.post("/", async (req, res) => {
   try {
     const { status, orderType, tableId, items } = req.body;
+
+    if (!status || status.trim() === "") {
+      return res.status(400).json({ error: "Status is required" });
+    }
+
+    if (!orderType || orderType.trim() === "") {
+      return res.status(400).json({ error: "Order type is required" });
+    }
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: "Order must include at least one item" });
+    }
+
+    for (const item of items) {
+      if (!item.menuItemId || item.menuItemId <= 0) {
+        return res.status(400).json({ error: "Each item must have a valid menuItemId" });
+      }
+
+      if (!item.quantity || item.quantity <= 0) {
+        return res.status(400).json({ error: "Each item quantity must be greater than 0" });
+      }
+    }
 
     const order = await prisma.order.create({
       data: {
@@ -57,6 +80,7 @@ router.post("/", async (req, res) => {
     res.status(500).json({ error: "Failed to create order" });
   }
 });
+
 
 // PATCH update an order
 router.patch("/:id", async (req, res) => {

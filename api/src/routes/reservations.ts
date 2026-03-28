@@ -16,6 +16,22 @@ router.post("/", async (req, res) => {
   try {
     const { customerName, customerPhone, partySize, reservationTime, status, tableId } = req.body;
 
+    if (!customerName || customerName.trim() === "") {
+      return res.status(400).json({ error: "Customer name is required" });
+    }
+
+    if (!partySize || partySize <= 0) {
+      return res.status(400).json({ error: "Party size must be greater than 0" });
+    }
+
+    if (!reservationTime) {
+      return res.status(400).json({ error: "Reservation time is required" });
+    }
+
+    if (!status || status.trim() === "") {
+      return res.status(400).json({ error: "Status is required" });
+    }
+
     const reservation = await prisma.reservation.create({
       data: {
         customerName,
@@ -29,6 +45,7 @@ router.post("/", async (req, res) => {
 
     res.status(201).json(reservation);
   } catch (error) {
+    console.error("POST reservation error:", error);
     res.status(500).json({ error: "Failed to create reservation" });
   }
 });
