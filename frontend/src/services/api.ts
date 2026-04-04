@@ -167,12 +167,69 @@ const mockUsers: User[] = [
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Menu API
+const API_BASE = "http://localhost:3000";
 export const menuApi = {
   getAll: async (): Promise<MenuItem[]> => {
-    await delay(300);
-    return [...mockMenuItems];
+    const res = await fetch(`${API_BASE}/menu`);
+    if (!res.ok) throw new Error("Failed to fetch menu");
+
+    const data = await res.json();
+
+    return data.map((item: any) => ({
+      ...item,
+      id: String(item.id),
+    }));
   },
 
+  getByCategory: async (category: string): Promise<MenuItem[]> => {
+    const items = await menuApi.getAll();
+    return items.filter((item: MenuItem) => item.category === category);
+  },
+
+  getCategories: async (): Promise<string[]> => {
+    const items = await menuApi.getAll();
+    return [...new Set(items.map((item: MenuItem) => item.category))] as string[];
+  },
+
+  create: async (item: Omit<MenuItem, "id">): Promise<MenuItem> => {
+    const res = await fetch(`${API_BASE}/menu`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(item),
+    });
+
+    if (!res.ok) throw new Error("Failed to create item");
+
+    const data = await res.json();
+    return { ...data, id: String(data.id) };
+  },
+
+  update: async (id: string, updates: Partial<MenuItem>): Promise<MenuItem> => {
+    const res = await fetch(`${API_BASE}/menu/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updates),
+    });
+
+    if (!res.ok) throw new Error("Failed to update item");
+
+    const data = await res.json();
+    return { ...data, id: String(data.id) };
+  },
+
+  delete: async (id: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/menu/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) throw new Error("Failed to delete item");
+  },
+};
+/* ==================commented out mock implementation for reference==================
   getByCategory: async (category: string): Promise<MenuItem[]> => {
     await delay(300);
     return mockMenuItems.filter(item => item.category === category);
@@ -204,6 +261,7 @@ export const menuApi = {
     if (index !== -1) mockMenuItems.splice(index, 1);
   },
 };
+*/
 
 // Reservation API
 export const reservationApi = {

@@ -9,7 +9,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use("/orders", orderRoutes);
+
 
 app.get("/health", (req, res) => {
   res.json({ ok: true, message: "API is running" });
@@ -17,6 +17,7 @@ app.get("/health", (req, res) => {
 
 app.use("/reservations", reservationRoutes);
 app.use("/menu", menuRoutes);
+app.use("/orders", orderRoutes);
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 
