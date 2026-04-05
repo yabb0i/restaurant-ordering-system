@@ -266,73 +266,165 @@ export const menuApi = {
 // Reservation API
 export const reservationApi = {
   getAll: async (): Promise<Reservation[]> => {
-    await delay(300);
-    return [...mockReservations];
+    const res = await fetch(`${API_BASE}/reservations`);
+    if (!res.ok) throw new Error("Failed to fetch reservations");
+
+    const data = await res.json();
+
+    return data.map((reservation: any) => ({
+      ...reservation,
+      id: String(reservation.id),
+    }));
   },
 
   getById: async (id: string): Promise<Reservation | undefined> => {
-    await delay(200);
-    return mockReservations.find(r => r.id === id);
+    const reservations = await reservationApi.getAll();
+    return reservations.find(r => r.id === id);
   },
 
-  create: async (reservation: Omit<Reservation, 'id' | 'status'>): Promise<Reservation> => {
-    await delay(300);
-    const newReservation: Reservation = {
-      ...reservation,
-      id: String(mockReservations.length + 1),
-      status: 'pending',
-    };
-    mockReservations.push(newReservation);
-    return newReservation;
+  create: async (reservation: {
+    customerName: string;
+    customerPhone: string;
+    partySize: number;
+    reservationTime: string;
+    status: string;
+  }): Promise<Reservation> => {
+    const res = await fetch(`${API_BASE}/reservations`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(reservation),
+    });
+
+    if (!res.ok) throw new Error("Failed to create reservation");
+
+    const data = await res.json();
+    return { ...data, id: String(data.id) };
   },
 
   update: async (id: string, updates: Partial<Reservation>): Promise<Reservation> => {
-    await delay(300);
-    const index = mockReservations.findIndex(r => r.id === id);
-    if (index === -1) throw new Error('Reservation not found');
-    mockReservations[index] = { ...mockReservations[index], ...updates };
-    return mockReservations[index];
+    const res = await fetch(`${API_BASE}/reservations/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updates),
+    });
+
+    if (!res.ok) throw new Error("Failed to update reservation");
+
+    const data = await res.json();
+    return { ...data, id: String(data.id) };
   },
 
   cancel: async (id: string): Promise<Reservation> => {
-    return reservationApi.update(id, { status: 'cancelled' });
+    return reservationApi.update(id, { status: "cancelled" });
   },
 
   confirm: async (id: string): Promise<Reservation> => {
-    return reservationApi.update(id, { status: 'confirmed' });
+    return reservationApi.update(id, { status: "confirmed" });
   },
 };
 
 // Order API
 export const orderApi = {
   getAll: async (): Promise<Order[]> => {
-    await delay(300);
-    return [...mockOrders];
+    const res = await fetch(`${API_BASE}/orders`);
+    if (!res.ok) throw new Error("Failed to fetch orders");
+
+    const data = await res.json();
+
+    return data.map((order: any) => ({
+      id: String(order.id),
+      userId: "guest",
+      customerName: `Order ${order.id}`,
+      items: (order.orderItems || []).map((item: any) => ({
+        menuItem: {
+          ...item.menuItem,
+          id: String(item.menuItem.id),
+        },
+        quantity: item.quantity,
+      })),
+      total: (order.orderItems || []).reduce(
+        (sum: number, item: any) => sum + item.menuItem.price * item.quantity,
+        0
+      ),
+      status: order.status.toLowerCase(),
+      createdAt: order.createdAt,
+      tableNumber: order.table?.number ?? undefined,
+    }));
   },
 
   getById: async (id: string): Promise<Order | undefined> => {
-    await delay(200);
-    return mockOrders.find(o => o.id === id);
+    const orders = await orderApi.getAll();
+    return orders.find(o => o.id === id);
   },
 
-  create: async (order: Omit<Order, 'id' | 'createdAt' | 'status'>): Promise<Order> => {
-    await delay(300);
-    const newOrder: Order = {
-      ...order,
-      id: String(mockOrders.length + 1),
-      status: 'pending',
-      createdAt: new Date().toISOString(),
+  create: async (order: {
+    status: string;
+    orderType: string;
+    tableId: number | null;
+    items: { menuItemId: number; quantity: number }[];
+  }): Promise<Order> => {
+    const res = await fetch(`${API_BASE}/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(order),
+    });
+
+    if (!res.ok) throw new Error("Failed to create order");
+
+    const data = await res.json();
+
+    return {
+      id: String(data.id),
+      userId: "guest",
+      customerName: `Order ${data.id}`,
+      items: (data.orderItems || []).map((item: any) => ({
+        menuItem: {
+          ...item.menuItem,
+          id: String(item.menuItem.id),
+        },
+        quantity: item.quantity,
+      })),
+      total: (data.orderItems || []).reduce(
+        (sum: number, item: any) => sum + item.menuItem.price * item.quantity,
+        0
+      ),
+      status: data.status.toLowerCase(),
+      createdAt: data.createdAt,
+      tableNumber: data.table?.number ?? undefined,
     };
-    mockOrders.push(newOrder);
-    return newOrder;
   },
 
-  updateStatus: async (id: string, status: Order['status']): Promise<Order> => {
-    await delay(300);
-    const index = mockOrders.findIndex(o => o.id === id);
-    if (index === -1) throw new Error('Order not found');
-    mockOrders[index] = { ...mockOrders[index], status };
-    return mockOrders[index];
+  updateStatus: async (id: string, status: Order["status"]): Promise<Order> => {
+    const res = await fetch(`${API_BASE}/orders/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status }),
+    });
+
+    if (!res.ok) throw new Error("Failed to update order status");
+
+    const data = await res.json();
+
+    const existing = await orderApi.getById(id);
+
+    return {
+      id: String(data.id),
+      userId: existing?.userId ?? "guest",
+      customerName: existing?.customerName ?? `Order ${data.id}`,
+      items: existing?.items ?? [],
+      total: existing?.total ?? 0,
+      status: data.status.toLowerCase(),
+      createdAt: data.createdAt,
+      tableNumber: existing?.tableNumber,
+    };
   },
 };
 

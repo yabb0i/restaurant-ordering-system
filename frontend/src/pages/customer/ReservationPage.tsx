@@ -50,29 +50,29 @@ export function ReservationPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
+  e.preventDefault();
+  if (!validate()) return;
 
-    setLoading(true);
-    try {
-      const reservation = await reservationApi.create({
-        userId: 'guest',
-        customerName: formData.customerName,
-        customerEmail: formData.customerEmail,
-        customerPhone: formData.customerPhone,
-        date: formData.date,
-        time: formData.time,
-        partySize: parseInt(formData.partySize),
-        specialRequests: formData.specialRequests,
-      });
-      navigate(`/reservation/confirmation/${reservation.id}`);
-    } catch (error) {
-      console.error('Failed to create reservation:', error);
-      alert('Failed to create reservation. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  try {
+    const reservationDateTime = `${formData.date}T${formData.time}:00`;
+
+    const reservation = await reservationApi.create({
+      customerName: formData.customerName,
+      customerPhone: formData.customerPhone,
+      partySize: parseInt(formData.partySize),
+      reservationTime: reservationDateTime,
+      status: "Pending",
+    });
+
+    navigate(`/reservation/confirmation/${reservation.id}`);
+  } catch (error) {
+    console.error("Failed to create reservation:", error);
+    alert("Failed to create reservation. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const timeSlots = [];
   for (let hour = 11; hour <= 21; hour++) {
