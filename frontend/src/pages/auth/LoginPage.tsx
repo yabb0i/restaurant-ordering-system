@@ -70,8 +70,8 @@ export function LoginPage() {
         <div className="mt-8 pt-6 border-t">
           <p className="text-sm text-gray-500 text-center mb-4">Demo Accounts:</p>
           <div className="text-xs text-gray-500 space-y-1">
-            <p><strong>Staff:</strong> staff@restaurant.com (any password)</p>
-            <p><strong>Manager:</strong> manager@restaurant.com (any password)</p>
+            <p><strong>Staff:</strong> staff@restaurant.com (anything password)</p>
+            <p><strong>Manager:</strong> manager@restaurant.com (anything password)</p>
           </div>
         </div>
       </Card>

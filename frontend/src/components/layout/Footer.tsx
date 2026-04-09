@@ -34,8 +34,8 @@ export function Footer() {
           <div>
             <h4 className="footer-heading">Contact</h4>
             <ul className="space-y-2 footer-text">
-              <li>123 Restaurant Street</li>
-              <li>City, State 12345</li>
+              <li>123123 Queens Street</li>
+              <li>Toronto, Ontario</li>
               <li>Phone: (555) 123-4567</li>
               <li>Email: info@bistrodelight.com</li>
             </ul>

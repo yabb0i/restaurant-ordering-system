@@ -1,5 +1,7 @@
 import { MenuItem, Reservation, Order, Table, User } from '../types';
 
+// Legacy mock menu data retained for now duirng integration
+// real menu data us now fetched fro the backend API
 // Mock data
 const mockMenuItems: MenuItem[] = [
   {
@@ -229,39 +231,6 @@ export const menuApi = {
     if (!res.ok) throw new Error("Failed to delete item");
   },
 };
-/* ==================commented out mock implementation for reference==================
-  getByCategory: async (category: string): Promise<MenuItem[]> => {
-    await delay(300);
-    return mockMenuItems.filter(item => item.category === category);
-  },
-
-  getCategories: async (): Promise<string[]> => {
-    await delay(200);
-    return [...new Set(mockMenuItems.map(item => item.category))];
-  },
-
-  create: async (item: Omit<MenuItem, 'id'>): Promise<MenuItem> => {
-    await delay(300);
-    const newItem = { ...item, id: String(mockMenuItems.length + 1) };
-    mockMenuItems.push(newItem);
-    return newItem;
-  },
-
-  update: async (id: string, updates: Partial<MenuItem>): Promise<MenuItem> => {
-    await delay(300);
-    const index = mockMenuItems.findIndex(item => item.id === id);
-    if (index === -1) throw new Error('Item not found');
-    mockMenuItems[index] = { ...mockMenuItems[index], ...updates };
-    return mockMenuItems[index];
-  },
-
-  delete: async (id: string): Promise<void> => {
-    await delay(300);
-    const index = mockMenuItems.findIndex(item => item.id === id);
-    if (index !== -1) mockMenuItems.splice(index, 1);
-  },
-};
-*/
 
 // Reservation API
 export const reservationApi = {
@@ -271,10 +240,29 @@ export const reservationApi = {
 
     const data = await res.json();
 
-    return data.map((reservation: any) => ({
-      ...reservation,
-      id: String(reservation.id),
-    }));
+    return data.map((reservation: any) => {
+      const reservationDate = new Date(reservation.reservationTime);
+
+const year = reservationDate.getFullYear();
+const month = String(reservationDate.getMonth() + 1).padStart(2, "0");
+const day = String(reservationDate.getDate()).padStart(2, "0");
+const hours = String(reservationDate.getHours()).padStart(2, "0");
+const minutes = String(reservationDate.getMinutes()).padStart(2, "0");
+
+return {
+  id: String(reservation.id),
+  userId: "guest",
+  customerName: reservation.customerName,
+  customerEmail: "",
+  customerPhone: reservation.customerPhone,
+  date: `${year}-${month}-${day}`,
+  time: `${hours}:${minutes}`,
+  partySize: reservation.partySize,
+  tableId: reservation.tableId ? String(reservation.tableId) : undefined,
+  status: reservation.status.toLowerCase(),
+  specialRequests: "",
+};
+    });
   },
 
   getById: async (id: string): Promise<Reservation | undefined> => {
@@ -300,30 +288,72 @@ export const reservationApi = {
     if (!res.ok) throw new Error("Failed to create reservation");
 
     const data = await res.json();
-    return { ...data, id: String(data.id) };
+    const reservationDate = new Date(data.reservationTime);
+
+    return {
+      id: String(data.id),
+      userId: "guest",
+      customerName: data.customerName,
+      customerEmail: "",
+      customerPhone: data.customerPhone,
+      date: reservationDate.toISOString().split("T")[0],
+      time: reservationDate.toTimeString().slice(0, 5),
+      partySize: data.partySize,
+      tableId: data.tableId ? String(data.tableId) : undefined,
+      status: data.status.toLowerCase(),
+      specialRequests: "",
+    };
   },
 
-  update: async (id: string, updates: Partial<Reservation>): Promise<Reservation> => {
-    const res = await fetch(`${API_BASE}/reservations/${id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updates),
-    });
+  update: async (id: string, updates: Partial<Reservation> & { reservationTime?: string }): Promise<Reservation> => {
+  const backendPayload: any = {};
 
-    if (!res.ok) throw new Error("Failed to update reservation");
+  if (updates.customerName !== undefined) backendPayload.customerName = updates.customerName;
+  if (updates.customerPhone !== undefined) backendPayload.customerPhone = updates.customerPhone;
+  if (updates.partySize !== undefined) backendPayload.partySize = updates.partySize;
+  if (updates.status !== undefined) backendPayload.status = updates.status;
+  if (updates.reservationTime !== undefined) backendPayload.reservationTime = updates.reservationTime;
 
-    const data = await res.json();
-    return { ...data, id: String(data.id) };
-  },
+  const res = await fetch(`${API_BASE}/reservations/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(backendPayload),
+  });
+
+  if (!res.ok) throw new Error("Failed to update reservation");
+
+  const data = await res.json();
+  const reservationDate = new Date(data.reservationTime);
+
+  const year = reservationDate.getFullYear();
+  const month = String(reservationDate.getMonth() + 1).padStart(2, "0");
+  const day = String(reservationDate.getDate()).padStart(2, "0");
+  const hours = String(reservationDate.getHours()).padStart(2, "0");
+  const minutes = String(reservationDate.getMinutes()).padStart(2, "0");
+
+return {
+  id: String(data.id),
+  userId: "guest",
+  customerName: data.customerName,
+  customerEmail: "",
+  customerPhone: data.customerPhone,
+  date: `${year}-${month}-${day}`,
+  time: `${hours}:${minutes}`,
+  partySize: data.partySize,
+  tableId: data.tableId ? String(data.tableId) : undefined,
+  status: data.status.toLowerCase(),
+  specialRequests: "",
+};
+},
 
   cancel: async (id: string): Promise<Reservation> => {
-    return reservationApi.update(id, { status: "cancelled" });
+    return reservationApi.update(id, { status: "cancelled" as any });
   },
 
   confirm: async (id: string): Promise<Reservation> => {
-    return reservationApi.update(id, { status: "confirmed" });
+    return reservationApi.update(id, { status: "confirmed" as any });
   },
 };
 

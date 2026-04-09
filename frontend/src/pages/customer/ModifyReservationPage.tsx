@@ -46,25 +46,29 @@ export function ModifyReservationPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!id) return;
+  e.preventDefault();
+  if (!id || !reservation) return;
 
-    setSaving(true);
-    try {
-      await reservationApi.update(id, {
-        date: formData.date,
-        time: formData.time,
-        partySize: parseInt(formData.partySize),
-        specialRequests: formData.specialRequests,
-      });
-      navigate(`/reservation/confirmation/${id}`);
-    } catch (error) {
-      console.error('Failed to update reservation:', error);
-      alert('Failed to update reservation. Please try again.');
-    } finally {
-      setSaving(false);
-    }
-  };
+  setSaving(true);
+  try {
+  const reservationDateTime = `${formData.date}T${formData.time}:00`;
+
+  await reservationApi.update(id, {
+  customerName: reservation.customerName,
+  customerPhone: reservation.customerPhone,
+  partySize: parseInt(formData.partySize),
+  reservationTime: reservationDateTime,
+  status: reservation.status,
+  } as any);
+
+    navigate(`/reservation/confirmation/${id}`);
+  } catch (error) {
+    console.error('Failed to update reservation:', error);
+    alert('Failed to update reservation. Please try again.');
+  } finally {
+    setSaving(false);
+  }
+};
 
   const handleCancel = async () => {
     if (!id) return;

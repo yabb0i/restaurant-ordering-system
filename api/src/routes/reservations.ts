@@ -53,15 +53,25 @@ router.post("/", async (req, res) => {
 router.patch("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const data = req.body;
+
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: "Invalid reservation id" });
+    }
+
+    const updateData: any = { ...req.body };
+
+    if (updateData.reservationTime) {
+      updateData.reservationTime = new Date(updateData.reservationTime);
+    }
 
     const updatedReservation = await prisma.reservation.update({
       where: { id },
-      data
+      data: updateData,
     });
 
     res.json(updatedReservation);
   } catch (error) {
+    console.error("PATCH reservation error:", error);
     res.status(500).json({ error: "Failed to update reservation" });
   }
 });
