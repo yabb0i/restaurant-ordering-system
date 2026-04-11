@@ -392,43 +392,43 @@ export const orderApi = {
   },
 
   create: async (order: {
-    status: string;
-    orderType: string;
-    tableId: number | null;
-    items: { menuItemId: number; quantity: number }[];
-  }): Promise<Order> => {
-    const res = await fetch(`${API_BASE}/orders`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+  status: string;
+  orderType: string;
+  tableId: number | null;
+  items: { menuItemId: number; quantity: number }[];
+}): Promise<Order> => {
+  const res = await fetch(`${API_BASE}/orders`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(order),
+  });
+
+  if (!res.ok) throw new Error("Failed to create order");
+
+  const data = await res.json();
+
+  return {
+    id: String(data.id),
+    userId: "guest",
+    customerName: `Order ${data.id}`,
+    items: (data.orderItems || []).map((item: any) => ({
+      menuItem: {
+        ...item.menuItem,
+        id: String(item.menuItem.id),
       },
-      body: JSON.stringify(order),
-    });
-
-    if (!res.ok) throw new Error("Failed to create order");
-
-    const data = await res.json();
-
-    return {
-      id: String(data.id),
-      userId: "guest",
-      customerName: `Order ${data.id}`,
-      items: (data.orderItems || []).map((item: any) => ({
-        menuItem: {
-          ...item.menuItem,
-          id: String(item.menuItem.id),
-        },
-        quantity: item.quantity,
-      })),
-      total: (data.orderItems || []).reduce(
-        (sum: number, item: any) => sum + item.menuItem.price * item.quantity,
-        0
-      ),
-      status: data.status.toLowerCase(),
-      createdAt: data.createdAt,
-      tableNumber: data.table?.number ?? undefined,
-    };
-  },
+      quantity: item.quantity,
+    })),
+    total: (data.orderItems || []).reduce(
+      (sum: number, item: any) => sum + item.menuItem.price * item.quantity,
+      0
+    ),
+    status: data.status.toLowerCase(),
+    createdAt: data.createdAt,
+    tableNumber: data.table?.number ?? undefined,
+  };
+},
 
   updateStatus: async (id: string, status: Order["status"]): Promise<Order> => {
     const res = await fetch(`${API_BASE}/orders/${id}`, {

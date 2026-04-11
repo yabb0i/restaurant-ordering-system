@@ -12,29 +12,32 @@ export function CartPage() {
   const [loading, setLoading] = useState(false);
 
   const handleCheckout = async () => {
-    if (!customerName.trim()) {
-      alert('Please enter your name');
-      return;
-    }
+  if (!customerName.trim()) {
+    alert('Please enter your name');
+    return;
+  }
 
-    setLoading(true);
-    try {
-      const order = await orderApi.create({
-        userId: 'guest',
-        customerName,
-        items,
-        total: totalPrice,
-        tableNumber: tableNumber ? parseInt(tableNumber) : undefined,
-      });
-      clearCart();
-      navigate(`/order/confirmation/${order.id}`);
-    } catch (error) {
-      console.error('Failed to place order:', error);
-      alert('Failed to place order. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  try {
+    const order = await orderApi.create({
+      status: 'Pending',
+      orderType: 'Dine-in',
+      tableId: null,
+      items: items.map(({ menuItem, quantity }) => ({
+        menuItemId: Number(menuItem.id),
+        quantity,
+      })),
+    });
+
+    clearCart();
+    navigate(`/order/confirmation/${order.id}`);
+  } catch (error) {
+    console.error('Failed to place order:', error);
+    alert('Failed to place order. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (items.length === 0) {
     return (
