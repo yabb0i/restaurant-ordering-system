@@ -51,7 +51,7 @@ export function ModifyReservationPage() {
 
   setSaving(true);
   try {
-  const reservationDateTime = `${formData.date}T${formData.time}:00`;
+  const reservationDateTime = `${formData.date}T${formData.time}:00`;// cmobines seperate data ad time fields into a sigle ISO string. DateTime field
 
   await reservationApi.update(id, {
   customerName: reservation.customerName,

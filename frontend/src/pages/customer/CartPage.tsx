@@ -23,7 +23,7 @@ export function CartPage() {
       status: 'Pending',
       orderType: 'Dine-in',
       tableId: null,
-      items: items.map(({ menuItem, quantity }) => ({
+      items: items.map(({ menuItem, quantity }) => ({ // converts cart items into backend format, expects menuItemId = quantity 
         menuItemId: Number(menuItem.id),
         quantity,
       })),

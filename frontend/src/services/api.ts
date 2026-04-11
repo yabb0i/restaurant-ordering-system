@@ -1,152 +1,5 @@
 import { MenuItem, Reservation, Order, Table, User } from '../types';
 
-// Legacy mock menu data retained for now duirng integration
-// real menu data us now fetched fro the backend API
-// Mock data
-const mockMenuItems: MenuItem[] = [
-  {
-    id: '1',
-    name: 'Classic Burger',
-    description: 'Juicy beef patty with lettuce, tomato, and our special sauce',
-    price: 12.99,
-    category: 'Main Course',
-    available: true,
-    imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400',
-  },
-  {
-    id: '2',
-    name: 'Caesar Salad',
-    description: 'Fresh romaine lettuce with parmesan, croutons, and Caesar dressing',
-    price: 9.99,
-    category: 'Starters',
-    available: true,
-    imageUrl: 'https://images.unsplash.com/photo-1546793665-c74683f339c1?w=400',
-  },
-  {
-    id: '3',
-    name: 'Margherita Pizza',
-    description: 'Traditional pizza with tomato sauce, mozzarella, and fresh basil',
-    price: 14.99,
-    category: 'Main Course',
-    available: true,
-    imageUrl: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400',
-  },
-  {
-    id: '4',
-    name: 'Grilled Salmon',
-    description: 'Fresh Atlantic salmon with herbs and lemon butter sauce',
-    price: 22.99,
-    category: 'Main Course',
-    available: true,
-    imageUrl: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400',
-  },
-  {
-    id: '5',
-    name: 'Chicken Wings',
-    description: 'Crispy wings with your choice of sauce: Buffalo, BBQ, or Honey Garlic',
-    price: 11.99,
-    category: 'Starters',
-    available: true,
-    imageUrl: 'https://images.unsplash.com/photo-1608039829572-9b3a4e1ce3da?w=400',
-  },
-  {
-    id: '6',
-    name: 'Chocolate Lava Cake',
-    description: 'Warm chocolate cake with a molten center, served with vanilla ice cream',
-    price: 8.99,
-    category: 'Desserts',
-    available: true,
-    imageUrl: 'https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=400',
-  },
-  {
-    id: '7',
-    name: 'Tiramisu',
-    description: 'Classic Italian dessert with layers of coffee-soaked ladyfingers and mascarpone',
-    price: 7.99,
-    category: 'Desserts',
-    available: true,
-    imageUrl: 'https://images.unsplash.com/photo-1571877227200-a0d98c038cde?w=400',
-  },
-  {
-    id: '8',
-    name: 'Soft Drinks',
-    description: 'Coca-Cola, Sprite, or Fanta',
-    price: 2.99,
-    category: 'Beverages',
-    available: true,
-  },
-  {
-    id: '9',
-    name: 'Fresh Lemonade',
-    description: 'House-made lemonade with fresh lemons and mint',
-    price: 4.99,
-    category: 'Beverages',
-    available: true,
-  },
-  {
-    id: '10',
-    name: 'Mushroom Soup',
-    description: 'Creamy mushroom soup with truffle oil',
-    price: 6.99,
-    category: 'Starters',
-    available: false,
-  },
-];
-
-let mockReservations: Reservation[] = [
-  {
-    id: '1',
-    userId: 'customer1',
-    customerName: 'John Doe',
-    customerEmail: 'john@example.com',
-    customerPhone: '555-0101',
-    date: '2024-12-20',
-    time: '19:00',
-    partySize: 4,
-    tableId: '1',
-    status: 'confirmed',
-  },
-  {
-    id: '2',
-    userId: 'customer2',
-    customerName: 'Jane Smith',
-    customerEmail: 'jane@example.com',
-    customerPhone: '555-0102',
-    date: '2024-12-20',
-    time: '20:00',
-    partySize: 2,
-    status: 'pending',
-  },
-];
-
-let mockOrders: Order[] = [
-  {
-    id: '1',
-    userId: 'customer1',
-    customerName: 'John Doe',
-    items: [
-      { menuItem: mockMenuItems[0], quantity: 2 },
-      { menuItem: mockMenuItems[1], quantity: 1 },
-    ],
-    total: 35.97,
-    status: 'preparing',
-    createdAt: new Date().toISOString(),
-    tableNumber: 5,
-  },
-  {
-    id: '2',
-    userId: 'customer2',
-    customerName: 'Jane Smith',
-    items: [
-      { menuItem: mockMenuItems[2], quantity: 1 },
-      { menuItem: mockMenuItems[7], quantity: 2 },
-    ],
-    total: 20.97,
-    status: 'pending',
-    createdAt: new Date().toISOString(),
-    tableNumber: 3,
-  },
-];
 
 const mockTables: Table[] = [
   { id: '1', number: 1, capacity: 2, status: 'available' },
@@ -171,7 +24,7 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 // Menu API
 const API_BASE = "http://localhost:3000";
 export const menuApi = {
-  getAll: async (): Promise<MenuItem[]> => {
+  getAll: async (): Promise<MenuItem[]> => { // Fetch all menu from backend and transform them into the format expected by frontend UI
     const res = await fetch(`${API_BASE}/menu`);
     if (!res.ok) throw new Error("Failed to fetch menu");
 
@@ -233,21 +86,21 @@ export const menuApi = {
 };
 
 // Reservation API
-export const reservationApi = {
-  getAll: async (): Promise<Reservation[]> => {
+export const reservationApi = { 
+  getAll: async (): Promise<Reservation[]> => { // fetch all reservations from backend and transform them to expectred format 
     const res = await fetch(`${API_BASE}/reservations`);
     if (!res.ok) throw new Error("Failed to fetch reservations");
 
     const data = await res.json();
 
     return data.map((reservation: any) => {
-      const reservationDate = new Date(reservation.reservationTime);
+    const reservationDate = new Date(reservation.reservationTime); // convert backen datatime into local date + time for ui display
 
-const year = reservationDate.getFullYear();
-const month = String(reservationDate.getMonth() + 1).padStart(2, "0");
-const day = String(reservationDate.getDate()).padStart(2, "0");
-const hours = String(reservationDate.getHours()).padStart(2, "0");
-const minutes = String(reservationDate.getMinutes()).padStart(2, "0");
+  const year = reservationDate.getFullYear();
+  const month = String(reservationDate.getMonth() + 1).padStart(2, "0");
+  const day = String(reservationDate.getDate()).padStart(2, "0");
+  const hours = String(reservationDate.getHours()).padStart(2, "0");
+  const minutes = String(reservationDate.getMinutes()).padStart(2, "0");
 
 return {
   id: String(reservation.id),
@@ -290,13 +143,19 @@ return {
     const data = await res.json();
     const reservationDate = new Date(data.reservationTime);
 
+    const year = reservationDate.getFullYear();
+    const month = String(reservationDate.getMonth() + 1).padStart(2, "0");
+    const day = String(reservationDate.getDate()).padStart(2, "0");
+    const hours = String(reservationDate.getHours()).padStart(2, "0");
+    const minutes = String(reservationDate.getMinutes()).padStart(2, "0")
+
     return {
       id: String(data.id),
       userId: "guest",
       customerName: data.customerName,
       customerEmail: "",
       customerPhone: data.customerPhone,
-      date: reservationDate.toISOString().split("T")[0],
+      date: `${year}-${month}-${day}`,
       time: reservationDate.toTimeString().slice(0, 5),
       partySize: data.partySize,
       tableId: data.tableId ? String(data.tableId) : undefined,
@@ -312,7 +171,8 @@ return {
   if (updates.customerPhone !== undefined) backendPayload.customerPhone = updates.customerPhone;
   if (updates.partySize !== undefined) backendPayload.partySize = updates.partySize;
   if (updates.status !== undefined) backendPayload.status = updates.status;
-  if (updates.reservationTime !== undefined) backendPayload.reservationTime = updates.reservationTime;
+  if (updates.reservationTime !== undefined) backendPayload.reservationTime = updates.reservationTime; // sends only backend- compatible fields 
+  // avoids frontend/ backend mismatch
 
   const res = await fetch(`${API_BASE}/reservations/${id}`, {
     method: "PATCH",
@@ -376,6 +236,7 @@ export const orderApi = {
         },
         quantity: item.quantity,
       })),
+      // transform backend orderItems into frontend-friendly structure and calculate total dynamically
       total: (order.orderItems || []).reduce(
         (sum: number, item: any) => sum + item.menuItem.price * item.quantity,
         0
@@ -477,17 +338,11 @@ export const tableApi = {
     mockTables[index] = { ...mockTables[index], status };
     return mockTables[index];
   },
-
-  assignToReservation: async (tableId: string, reservationId: string): Promise<void> => {
-    await delay(300);
-    const tableIndex = mockTables.findIndex(t => t.id === tableId);
-    const resIndex = mockReservations.findIndex(r => r.id === reservationId);
-    if (tableIndex === -1) throw new Error('Table not found');
-    if (resIndex === -1) throw new Error('Reservation not found');
-    mockTables[tableIndex].status = 'reserved';
-    mockReservations[resIndex].tableId = tableId;
-    mockReservations[resIndex].status = 'confirmed';
-  },
+// Placeholder: table-to-reservation assignment is not yet connected
+// to the backend and should be implemented with real API calls 
+  assignToReservation: async (_tableId: string, _reservationId: string): Promise<void> => {
+  throw new Error('assignToReservation is not connected to backend yet');
+},
 };
 
 // Auth API
